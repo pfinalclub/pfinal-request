@@ -321,4 +321,80 @@ class Base
         return $headers;
     }
 
+    public function getRequestType()
+    {
+        $type = ['PUT', 'DELETE', 'POST', 'GET'];
+        foreach ($type as $t) {
+            if ($this->isMethod($t)) {
+                return $t;
+            }
+        }
+    }
+
+    public function query($name, $value = null, $method = [])
+    {
+        $exp = explode('.', $name);
+        if (count($exp) == 1) {
+            array_unshift($exp, 'request');
+        }
+        $action = array_shift($exp);
+        return $this->__call($action, [implode('.', $exp), $value, $method]);
+    }
+
+    public function ip($type = 0)
+    {
+        $type = intval($type);
+        if (isset($_SERVER)) {
+            if (isset($_SERVER["HTTP_X_FORWARDED_FOR"])) {
+                $ip = $_SERVER["HTTP_X_FORWARDED_FOR"];
+            } else if (isset($_SERVER["HTTP_CLIENT_IP"])) {
+                $ip = $_SERVER["HTTP_CLIENT_IP"];
+            } else if (isset($_SERVER["REMOTE_ADDR"])) {
+                $ip = $_SERVER["REMOTE_ADDR"];
+            } else {
+                return '';
+            }
+        } else {
+            if (getenv("HTTP_X_FORWARDED_FOR")) {
+                $ip = getenv("HTTP_X_FORWARDED_FOR");
+            } else if (getenv("HTTP_CLIENT_IP")) {
+                $ip = getenv("HTTP_CLIENT_IP");
+            } else if (getenv("REMOTE_ADDR")) {
+                $ip = getenv("REMOTE_ADDR");
+            } else {
+                return '';
+            }
+        }
+        $long = ip2long($ip);
+        $clientIp = $long ? [$ip, $long] : ["0.0.0.0", 0];
+        return $clientIp[$type];
+    }
+
+    public function isDomain()
+    {
+        if (isset($_SERVER['HTTP_REFERER'])) {
+            $referer = parse_url($_SERVER['HTTP_REFERER']);
+            return $referer['host'] == $_SERVER['HTTP_HOST'];
+        }
+        return false;
+    }
+
+    public function isHttps()
+    {
+        if (isset($_SERVER['HTTPS'])
+            && ('1' == $_SERVER['HTTPS']
+                || 'on' == strtolower($_SERVER['HTTPS']))) {
+            return true;
+        } elseif (isset($_SERVER['SERVER_PORT']) && ('443' == $_SERVER['SERVER_PORT'])) {
+            return true;
+        }
+        return false;
+    }
+
+    public function getHost($url)
+    {
+        $arr = parse_url($url);
+        return isset($arr['host']) ? $arr['host'] : '';
+    }
+
 }

@@ -37,4 +37,9 @@ class RequestTest extends \PHPUnit\Framework\TestCase
         Request::set("get.a", 'sina');
         $this->assertEquals('sina', Request::get('a'));
     }
+
+    public function testIp()
+    {
+        $this->assertInternalType('string',Request::ip());
+    }
 }
