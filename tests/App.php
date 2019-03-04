@@ -37,7 +37,7 @@ class App extends \PHPUnit\Framework\TestCase
 {
     public static function domain()
     {
-        //var_dump(Request::url());
+        Request::gettallheaders();
     }
 }
 
