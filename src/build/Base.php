@@ -32,6 +32,8 @@
 namespace pf\request\build;
 
 use pf\arr\PFarr;
+use pf\config\Config;
+use pf\cookie\Cookie;
 
 class Base
 {
@@ -99,26 +101,84 @@ class Base
 
     protected function defineRequestConst()
     {
-        $this->items['POST']    = $_POST;
-        $this->items['GET']     = $_GET;
+        $this->items['POST'] = $_POST;
+        $this->items['GET'] = $_GET;
         $this->items['REQUEST'] = $_REQUEST;
-        $this->items['SERVER']  = $_SERVER;
+        $this->items['SERVER'] = $_SERVER;
         $this->items['GLOBALS'] = $GLOBALS;
         //$this->items['SESSION'] = Session::all();
-        $this->items['COOKIE']  = Cookie::all();
-        if ( empty( $_POST ) ) {
-            $input = file_get_contents( 'php://input' );
-            if ( $data = json_decode( $input, true ) ) {
+        $this->items['COOKIE'] = Cookie::all();
+        if (empty($_POST)) {
+            $input = file_get_contents('php://input');
+            if ($data = json_decode($input, true)) {
                 $this->items['POST'] = $data;
             }
         }
-        defined( 'IS_GET' ) or define( 'IS_GET', $this->isMethod( 'get' ) );
-        defined( 'IS_POST' ) or define( 'IS_POST', $this->isMethod( 'post' ) );
-        defined( 'IS_DELETE' ) or define( 'IS_DELETE', $this->isMethod( 'delete' ) );
-        defined( 'IS_PUT' ) or define( 'IS_PUT', $this->isMethod( 'put' ) );
-        defined( 'IS_AJAX' ) or define( 'IS_AJAX', $this->isAjax() );
-        defined( 'IS_WECHAT' ) or define( 'IS_WECHAT', $this->isWeChat() );
-        defined( 'IS_MOBILE' ) or define( 'IS_MOBILE', $this->isMobile() );
+        defined('IS_GET') or define('IS_GET', $this->isMethod('get'));
+        defined('IS_POST') or define('IS_POST', $this->isMethod('post'));
+        defined('IS_DELETE') or define('IS_DELETE', $this->isMethod('delete'));
+        defined('IS_PUT') or define('IS_PUT', $this->isMethod('put'));
+        defined('IS_AJAX') or define('IS_AJAX', $this->isAjax());
+        defined('IS_WECHAT') or define('IS_WECHAT', $this->isWeChat());
+        defined('IS_MOBILE') or define('IS_MOBILE', $this->isMobile());
+    }
+
+    public function history()
+    {
+        return isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '';
+    }
+
+    public function domain()
+    {
+        return defined('RUN_MODE') && RUN_MODE != 'HTTP' ? '' : trim('http://' . $_SERVER['HTTP_HOST'] . dirname($_SERVER['SCRIPT_NAME']), '/\\');
+    }
+
+    public function web()
+    {
+        $root = $this->domain();
+        return Config::get('http.rewrite') ? $root : $root . '/index.php';
+    }
+
+    public function isMethod($action)
+    {
+        switch (strtoupper($action)) {
+            case 'GET':
+                return $_SERVER['REQUEST_METHOD'] == 'GET';
+            case 'POST':
+                return $_SERVER['REQUEST_METHOD'] == 'POST' || !empty($this->items['POST']);
+            case 'DELETE':
+                return $_SERVER['REQUEST_METHOD'] == 'DELETE' ?: (isset($_POST['_method']) && $_POST['_method'] == 'DELETE');
+            case 'PUT':
+                return $_SERVER['REQUEST_METHOD'] == 'PUT' ?: (isset($_POST['_method']) && $_POST['_method'] == 'PUT');
+            case 'AJAX':
+                return $this->isAjax();
+            case 'wechat':
+                return $this->isWeChat();
+            case 'mobile':
+                return $this->isMobile();
+
+        }
+    }
+
+    public function isAjax()
+    {
+        return isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtoupper($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
+    }
+
+    public function isWeChat()
+    {
+        return isset($_SERVER['HTTP_USER_AGENT']) && strrpos($_SERVER['HTTP_USER_AGENT'], 'MicroMessenger') !== false;
+    }
+
+    public function isMobile()
+    {
+        if ($this->isWeChat()) {
+            return true;
+        }
+        if (!empty($_GET['_mobile'])) {
+            return true;
+        }
+        
     }
 
 }

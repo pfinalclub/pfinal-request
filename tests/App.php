@@ -1,10 +1,9 @@
 <?php
-
 /**
  * Created by PhpStorm.
  * User: 南丞
- * Date: 2019/2/28
- * Time: 11:04
+ * Date: 2019/3/4
+ * Time: 10:13
  *
  *
  *                      _ooOoo_
@@ -29,12 +28,20 @@
  *           佛祖保佑       永无BUG     永不修改
  *
  */
+
 use pf\request\Request;
-class RequestTest extends \PHPUnit\Framework\TestCase
+
+include '../vendor/autoload.php';
+
+class App extends \PHPUnit\Framework\TestCase
 {
-    public function testSet()
+    public static function domain()
     {
-        Request::set("get.a", 'sina');
-        $this->assertEquals('sina', Request::get('a'));
+        //var_dump(Request::url());
     }
 }
+
+App::domain();
+?>
+
+<a href="App.php">link</a>
