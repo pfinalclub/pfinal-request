@@ -35,8 +35,8 @@
     "phpunit/phpunit": "6.2"
   },
   "require": {
-    "nancheng/pfinal-array": "dev-master",
-    "nancheng/pfinal-cookie": "dev-master"
+    "nancheng/pfinal-array": "*",
+    "nancheng/pfinal-cookie": "*"
   },
   "minimum-stability": "dev"
 }
