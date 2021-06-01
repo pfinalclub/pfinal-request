@@ -36,7 +36,7 @@
   },
   "require": {
     "nancheng/pfinal-array": "*",
-    "nancheng/pfinal-cookie": "*"
+    "nancheng/pfinal-cookie": "v0.1"
   },
   "minimum-stability": "dev"
 }
